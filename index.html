@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Documents</title>
+<meta name="description" content="A free page where people open, fill in and sign your documents. Made from a GitHub template in two minutes.">
+<style>
+:root{--ink:#1d2330;--muted:#5f6673;--line:#e3e6eb;--brand:#185abc;--bg:#f6f7f9;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--ink:#e9ecf1;--muted:#a3aab5;--line:#2c323c;--bg:#14171c;--card:#1b1f26}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:820px;margin:0 auto;padding:40px 16px 64px}h1{font-size:clamp(26px,5vw,38px);line-height:1.2;margin:0 0 8px}
+.lead{color:var(--muted);margin:0 0 24px}.list{display:grid;gap:12px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.item b{font-weight:600}.kind{font-size:13px;color:var(--muted);margin-left:6px}
+.btn{background:var(--brand);color:#fff;padding:9px 14px;border-radius:9px;font-weight:650;text-decoration:none;white-space:nowrap}
+iframe{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:8px}
+h2{font-size:20px;margin:32px 0 8px}footer{margin-top:40px;font-size:14px;color:var(--muted)}footer a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+<h1 id="title">Documents</h1>
+<p class="lead" id="intro"></p>
+<div class="list" id="list"><p class="lead">Loading…</p></div>
+<div id="forms"></div>
+<footer>Documents open in <a id="made" href="https://app.layers.md/register?from=door-portal">Layers</a>: read, fill in, sign, save a copy. This page was made from <a href="https://github.com/SumOfficeApp/document-portal-template">a free template</a>.</footer>
+</main>
+<script src="layers-door.js"></script>
+<script>
+(async () => {
+  const D = window.LayersDoor;
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  const repoName = location.pathname.split('/').filter(Boolean)[0];
+  const cfg = await fetch('config.json', { cache: 'no-store' }).then(r => r.json()).catch(() => ({}));
+  const repo = cfg.repo || (m && repoName ? m[1] + '/' + repoName : 'SumOfficeApp/document-portal-template');
+  const from = cfg.from || ('door-portal-' + repo.split('/')[0]).toLowerCase();
+  document.getElementById('made').href = D.signUpUrl(from);
+  if (cfg.title) { document.getElementById('title').textContent = cfg.title; document.title = cfg.title; }
+  document.getElementById('intro').textContent = cfg.intro || '';
+  const list = document.getElementById('list');
+  let files = [];
+  try {
+    const r = await fetch('https://api.github.com/repos/' + repo + '/contents/documents');
+    if (r.ok) files = (await r.json()).filter(f => D.isOfficeFile(f.name));
+  } catch (e) {}
+  if (!files.length && Array.isArray(cfg.documents)) files = cfg.documents.map(n => ({ name: n }));
+  list.innerHTML = '';
+  if (!files.length) list.innerHTML = '<p class="lead">Put .docx, .xlsx or .pptx files into the documents folder.</p>';
+  for (const f of files) {
+    const url = new URL('documents/' + encodeURIComponent(f.name), location.href).href;
+    const row = document.createElement('div'); row.className = 'item';
+    const name = document.createElement('div');
+    const b = document.createElement('b'); b.textContent = f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+    const k = document.createElement('span'); k.className = 'kind'; k.textContent = f.name.split('.').pop().toUpperCase();
+    name.append(b, k);
+    const a = document.createElement('a'); a.className = 'btn'; a.target = '_blank'; a.rel = 'noopener';
+    a.href = D.viewerUrl(url, from); a.textContent = 'Open, fill in, sign';
+    row.append(name, a); list.append(row);
+  }
+  const forms = document.getElementById('forms');
+  for (const fm of cfg.forms || []) {
+    const h = document.createElement('h2'); h.textContent = fm.title || fm.slug;
+    const fr = document.createElement('iframe'); fr.src = D.formUrl(fm.slug, from); fr.height = fm.height || 720; fr.loading = 'lazy'; fr.title = fm.title || fm.slug;
+    forms.append(h, fr);
+  }
+})();
+</script>
+</body>
+</html>

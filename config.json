@@ -1,0 +1,8 @@
+{
+  "title": "Harbor Bakery: documents",
+  "intro": "Read, fill in and sign our documents right in your browser. Nothing to install.",
+  "documents": ["service-agreement.docx", "invoice.xlsx"],
+  "forms": [
+    { "slug": "invoice-template-with-tax-calculation", "title": "Invoice with tax calculation" }
+  ]
+}
