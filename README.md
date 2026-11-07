@@ -20,7 +20,7 @@ Edit `config.json` for the title, the intro line and live documents from the Lay
 {
   "title": "Harbor Bakery: documents",
   "intro": "Read, fill in and sign our documents right in your browser.",
-  "forms": [{ "slug": "invoice-template-with-tax-calculation", "title": "Invoice with tax calculation" }]
+  "forms": [{ "slug": "freelance-invoice-payment-reminder", "title": "Payment reminder for an unpaid invoice" }]
 }
 ```
 
